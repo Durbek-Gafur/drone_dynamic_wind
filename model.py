@@ -1,16 +1,16 @@
 from supportingFunctions import shortestPath, shortestCycle
-from loadGraph import initDefaultGraph
+from loadData import initDefaultGraph,initWinds
 
-def offlineShortestPath(graph,Battery,source,destination,payload,speed,wind_speed,wind_direction):
+def offlineShortestPath(graph,Battery,source,destination,payload,speed,time=0):
     status = None
     flag = False
     time = 0
-    cycle = shortestCycle(graph, source, destination,payload,speed,wind_speed,wind_direction)
-    total_energy = graph.get_path_energy(cycle,payload,speed,wind_speed,wind_direction)
+    cycle = shortestCycle(graph, source, destination,payload,speed,time)
+    total_energy = graph.get_path_energy(cycle,payload,speed,time)
     if total_energy <=Battery:
         for i in range(len(cycle)-1):
             # wind_speed, wind_direction is function of time
-            edge_energy = graph.get_energy_between_two_nodes(cycle[i],cycle[i+1],payload,speed,wind_speed,wind_direction)
+            edge_energy = graph.get_energy_between_two_nodes(cycle[i],cycle[i+1],payload,speed,time)
             Battery -= edge_energy 
 
             if cycle[i+1] == destination:
@@ -33,17 +33,16 @@ def offlineShortestPath(graph,Battery,source,destination,payload,speed,wind_spee
 
 if __name__ == '__main__':
     # drone's parameters
-
-    g = initDefaultGraph()
-
     payload = 10
     speed = 10
 
     # wind's parameters (global)
     wind_speed = 5
     wind_direction = 0
+
+    g = initDefaultGraph()
     # g.printConnection(payload,speed,wind_speed,wind_direction)
     # start = time
-    status = offlineShortestPath(g,840,'a', 'd',payload,speed,wind_speed,wind_direction)
+    status = offlineShortestPath(g,170,'a', 'd',payload,speed,0) # offline shortest path depends on time
   
     print(status)

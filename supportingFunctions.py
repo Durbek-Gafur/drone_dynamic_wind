@@ -9,12 +9,12 @@ def testEnergy(Ax,Ay,Bx,By,payload,speed,wind_speed,wind_direction):
     return get_energy(distance, payload, speed, wind_speed, relative_wind_direction)
 
    
-def shortestCycle(graph,source,destination,payload,speed,wind_speed,wind_direction):
-    src = shortestPath(graph, source, destination,payload,speed,wind_speed,wind_direction)
-    dst = shortestPath(graph, destination, source,payload,speed,wind_speed,wind_direction) 
+def shortestCycle(graph,source,destination,payload,speed,time=0):
+    src = shortestPath(graph, source, destination,payload,speed,time)
+    dst = shortestPath(graph, destination, source,payload,speed,time) 
     return src+dst[1:]
 
-def shortestPath(graph, source, destination,payload,speed,wind_speed,wind_direction):
+def shortestPath(graph, source, destination,payload,speed,time=0):
     # shortest paths is a dict of nodes
     # whose value is a tuple of (previous node, weight)
     shortest_paths = {source: (None, 0)}
@@ -27,7 +27,7 @@ def shortestPath(graph, source, destination,payload,speed,wind_speed,wind_direct
         weight_to_current_node = shortest_paths[current_node.get_id()][1]
 
         for next_node in destinations:
-            weight = current_node.get_weight(next_node,payload,speed,wind_speed,wind_direction) + weight_to_current_node
+            weight = current_node.get_weight(next_node,payload,speed,graph.get_wind_speed(time),graph.get_wind_direction(time)) + weight_to_current_node
 
             if next_node.get_id() not in shortest_paths:
                 shortest_paths[next_node.get_id()] = (current_node.get_id(), weight)

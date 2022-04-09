@@ -131,9 +131,10 @@ class Vertex:
         return get_energy(distance, payload, speed, wind_speed, relative_wind_direction)
 
 class Graph:
-    def __init__(self):
+    def __init__(self,winds):
         self.vert_dict = {}
         self.num_vertices = 0
+        self.winds = winds
 
     def __iter__(self):
         return iter(self.vert_dict.values())
@@ -161,21 +162,21 @@ class Graph:
 
     def get_vertices(self):
         return self.vert_dict.keys()
-
-    def get_energy_between_two_nodes(self,source,destination,payload,speed,wind_speed,wind_direction):
+#big change
+    def get_energy_between_two_nodes(self,source,destination,payload,speed,time):
         current_node = self.get_vertex(source)
         next_node = self.get_vertex(destination)
-        return current_node.get_weight(next_node,payload,speed,wind_speed,wind_direction)
+        return current_node.get_weight(next_node,payload,speed,self.get_wind_speed(time),self.get_wind_direction(time))
 
-    def get_path_energy(self,path,payload,speed,wind_speed,wind_direction):
+    def get_path_energy(self,path,payload,speed,time):
         if len(path) == 2:
-            return self.get_energy_between_two_nodes(path[i],path[i+1],payload,speed,wind_speed,wind_direction)
+            return self.get_energy_between_two_nodes(path[i],path[i+1],payload,speed,time)
         energy = 0
         for i in range(len(path)-1):
             
             if len(path)/2<i+1:
                 payload = 0
-            energy+=self.get_energy_between_two_nodes(path[i],path[i+1],payload,speed,wind_speed,wind_direction)
+            energy+=self.get_energy_between_two_nodes(path[i],path[i+1],payload,speed,time)
 
         return energy 
 
@@ -184,12 +185,97 @@ class Graph:
         next_node = self.get_vertex(destination)
         return current_node.adjacent[next_node]["distance"] 
 
-    def printConnection(self,payload,speed,wind_speed,wind_direction):
+    def get_wind_speed(self,time):
+        return self.winds.get_wind_speed(time)
+
+    def get_wind_direction(self,time):
+        return self.winds.get_wind_direction(time)
+
+    def printConnection(self,payload,speed,time):
+
         for v in self:
             for w in v.get_connections():
                 vid = v.get_id()
                 wid = w.get_id()
-                print('( %s , %s, %f, %f == %f)'  % ( vid, wid, v.get_direction(w),v.get_weight(w,payload,speed,wind_speed,wind_direction),testEnergy(v.x,v.y,w.x,w.y,payload,speed,wind_speed,wind_direction)))
 
+                print('( %s , %s, %f, %f )'  % ( vid, wid, v.get_direction(w),v.get_weight(w,payload,speed,self.get_wind_speed(time),self.get_wind_direction(time)))) #testEnergy(v.x,v.y,w.x,w.y,payload,speed,self.get_wind_speed(time),self.get_wind_direction(time))
         for v in self:
             print ('g.vert_dict[%s]=%s' %(v.get_id(), g.vert_dict[v.get_id()]))
+
+
+class Wind:
+    def __init__(self,wind_speed,wind_direction,timeUpperBound):
+        self.wind_speed = wind_speed
+        self.wind_direction = wind_direction
+        self.time = timeUpperBound
+
+    def get_wind_speed(self):
+        return self.wind_speed
+
+    def get_wind_direction(self):
+        return self.wind_direction
+
+    def __str__(self):
+        return str(self.wind_speed)+" "+str(self.wind_direction)
+
+class Winds():
+    def __init__(self):
+        self.wind_dict = {}
+        self.wind_array = []
+        self.add_wind(0,0,0)
+        self.add_wind(0,0,float("inf"))
+
+    def add_wind(self,wind_speed,wind_direction,timeUpperBound):
+        wind = Wind(wind_speed,wind_direction,timeUpperBound)
+        self.wind_dict[timeUpperBound] = wind
+        self.wind_array.append(timeUpperBound)
+        self.wind_array.sort()
+
+    def get_wind(self,time):
+
+        for i in range(len(self.wind_array)-1):
+            if self.wind_array[i]<= time < self.wind_array[i+1]:
+                return self.wind_dict[self.wind_array[i+1]]
+        return None 
+
+    def get_wind_speed(self,time):
+        return self.get_wind(time).wind_speed
+
+    def get_wind_direction(self,time):
+        return self.get_wind(time).wind_direction
+
+    def __str__(self):
+        r=""
+        for key in self.wind_array:
+            r+=str(key)+" "+str(self.wind_dict[key])+"\n"
+        return r
+
+
+# winds = Winds()
+# winds.add_wind(5,0,10)
+# winds.add_wind(15,1,20)
+
+# g = Graph(winds)
+# g.add_vertex('a',(0,0))
+# g.add_vertex('b',(100,100))
+# g.add_vertex('c',(100,200))
+# g.add_vertex('d',(200,200))
+# g.add_vertex('e',(200,100))
+# g.add_vertex('f',(-100,100))
+
+# g.add_edge('a', 'b')  
+# # g.add_edge('a', 'c')
+# g.add_edge('a', 'f')
+# g.add_edge('b', 'c')
+# g.add_edge('b', 'e')
+# g.add_edge('b', 'f')
+# g.add_edge('c', 'd')
+# g.add_edge('c', 'f')
+# g.add_edge('d', 'e')
+
+
+# print(g.get_wind_speed(1))
+# print(g.get_wind_speed(12))
+# # print(graph.vert_dict)
+# # g.printConnection(10,5,1)
+

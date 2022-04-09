@@ -4,9 +4,11 @@ def initWinds():
     winds = Winds()
     winds.add_wind(5,0,10)
     winds.add_wind(5,0,20)
-    
+    return winds
+
 def initDefaultGraph():
-    g = Graph()
+    winds = initWinds()
+    g = Graph(winds)
     g.add_vertex('a',(0,0))
     g.add_vertex('b',(100,100))
     g.add_vertex('c',(100,200))
